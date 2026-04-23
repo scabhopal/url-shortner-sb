@@ -24,7 +24,6 @@ import com.url.shortener.security.jwt.JwtAuthenticationFilter;
 import com.url.shortener.service.UserDetailsServiceImpl;
 
 import lombok.AllArgsConstructor;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

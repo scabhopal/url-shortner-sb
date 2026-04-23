@@ -19,7 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.url.shortener.security.jwt.JwtAuthenticationFilter;
 import com.url.shortener.service.UserDetailsServiceImpl;
@@ -31,9 +30,9 @@ import lombok.AllArgsConstructor;
 @EnableMethodSecurity
 @AllArgsConstructor
 public class WebSecurityConfig {
-	
-	@Value("${frontend.url}")
-	private String frontEndUrl;
+
+    @Value("${frontend.url}")
+    private String frontEndUrl;
 
     private UserDetailsServiceImpl userDetailsService;
 
@@ -52,7 +51,6 @@ public class WebSecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -61,25 +59,10 @@ public class WebSecurityConfig {
         return authProvider;
     }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .requestMatchers("/api/urls/**").authenticated()
-//                        .requestMatchers("/{shortUrl}").permitAll()
-//                        .anyRequest().authenticated()
-//                );
-//        http.authenticationProvider(authenticationProvider());
-//        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
-//    }
-    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 FIX
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 IMPORTANT
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -94,17 +77,20 @@ public class WebSecurityConfig {
 
         return http.build();
     }
-    
+
+    // 🔥 THIS is the actual CORS config used by Spring Security
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173",frontEndUrl)); // frontend
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                frontEndUrl
+            ));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            config.setAllowedHeaders(List.of("*"));
+            config.setAllowCredentials(true);
+            return config;
+        };
     }
 }

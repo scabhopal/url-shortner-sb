@@ -2,6 +2,7 @@ package com.url.shortener.security;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,16 +24,16 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import com.url.shortener.security.jwt.JwtAuthenticationFilter;
 import com.url.shortener.service.UserDetailsServiceImpl;
 
-import lombok.AllArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@AllArgsConstructor
 public class WebSecurityConfig {
 
     @Value("${frontend.url}")
     private String frontEndUrl;
 
+    @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
     @Bean
@@ -61,7 +62,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔥 IMPORTANT
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -77,7 +78,6 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-    // 🔥 THIS is the actual CORS config used by Spring Security
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         return request -> {
